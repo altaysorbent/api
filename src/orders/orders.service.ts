@@ -16,7 +16,7 @@ import { formatISO } from 'date-fns';
 import { MailerService } from '@nestjs-modules/mailer';
 import { PayboxResultResponseInterface } from './interfaces/paybox/resultResponse.interface';
 import { SENDER_CITIES, TARIFFS } from '../constants/delivery';
-import { PayboxRequestDTO } from './dto/payboxRequest.dto';
+import { PayboxResultDTO } from './dto/payboxResultDTO';
 
 const EmailTemplates = {
   NEW_ORDER: 'newOrder',
@@ -148,7 +148,7 @@ export class OrdersService {
     );
   }
 
-  async processResult(result: PayboxRequestDTO, endpointUrl) {
+  async processResult(result: PayboxResultDTO, endpointUrl) {
     const orderId = result.pg_order_id;
     const order = await this.orderModel.findOne({id: orderId}).exec();
     let responseText = '';
@@ -167,12 +167,10 @@ export class OrdersService {
           title,
           orderId,
           phone: result.pg_user_phone,
-          email: result.pg_user_contact_email,
           amount: result.pg_amount,
           paymentSystem: result.pg_payment_system,
           payboxPaymentId: result.pg_payment_id,
           payboxCardNumber: result.pg_card_pan,
-          payboxCardOwner: result.pg_card_owner,
           allParams: JSON.stringify(result),
         };
         this.salesNotify(context, title, EmailTemplates.ORDER_PAID);
