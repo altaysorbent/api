@@ -1,0 +1,25 @@
+const ORDER_STATUSES = {
+  NEW: 'new',
+  PAID: 'paid',
+  CANCELED: 'canceled',
+};
+
+const DEFAULT_CURRENCY = 'KZT';
+
+const ORDER_RESULT_ENDPOINT_URL = '/orders/result';
+
+const PAYBOX_SUCCESS_RESULT_CODE = '1';
+
+const PAYBOX_RESPONSE_STATUSES = {
+  SUCCESS: 'ok',
+  ERROR: 'error',
+  REJECTED: 'rejected',
+}
+
+export {
+  ORDER_STATUSES,
+  DEFAULT_CURRENCY,
+  ORDER_RESULT_ENDPOINT_URL,
+  PAYBOX_SUCCESS_RESULT_CODE,
+  PAYBOX_RESPONSE_STATUSES
+};

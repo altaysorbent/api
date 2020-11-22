@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta name="viewport" content="width=device-width" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>{{ title }}</title>
+</head>
+
+<body>
+<h4>{{ title }}</h4>
+<div>
+  <div><b>Ф.И.О. получателя</b> : {{ name }} </div>
+  <div><b>Телефон пользователя</b> : {{ phone }}</div>
+  <div><b>Email</b> : {{ email }}</div>
+
+  <div><b>Кол-во коробок</b> : {{count}}</div>
+  <div><b>Стоимость единицы товара:</b> {{ price }} KZT</div>
+  <div><b>Стоимость товара</b> : {{productTotal}} KZT</div>
+  <div><b>Стоимость доставки</b> : {{delivery.price}}</div>
+  <div><b>Сумма с учетом доставки</b> : {{totalPrice}} KZT</div>
+  <div><b>Дата создания</b> : {{ creationDate }}</div>
+
+  <div>
+    <div>Доставка</div>
+    <div><b>Город отправления</b>: {{ senderCity }}</div>
+    <div><b>Город</b> : {{delivery.cityFull}}</div>
+    <div><b>Адрес</b> : {{delivery.address}}</div>
+    <div><b>Почтовый код</b> : {{delivery.zip}}</div>
+    <div><b>Тариф</b> : {{tariff}}</div>
+  </div>
+  <div>
+    <div> Все параметры</div>
+    <pre>{{ allParams }}</pre>
+  </div>
+</div>
+
+
+</body>
+
+</html>

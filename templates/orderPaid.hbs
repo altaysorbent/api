@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta name="viewport" content="width=device-width" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>{{ title }}</title>
+</head>
+<body>
+<h4>{{ title }}</h4>
+<div>
+  <div><b>Номер заказа</b> : {{ orderId }} </div>
+  <div><b>Телефон пользователя</b> : {{ phone }}</div>
+  <div><b>Email:</b> {{email}}</div>
+  <div><b>Сумма</b> : {{ amount }} KZT</div>
+  <div><b>Платежная система</b> {{ paymentSystem }} </div>
+  <div><b>PAYBOX payment_id</b> {{ payboxPaymentId }}</div>
+  <div><b>Номер карты</b> {{ payboxCardNumber }}</div>
+  <div><b>Владелец карты</b> {{ payboxCardOwner}}</div>
+
+  <div>
+    <div> Все параметры</div>
+    <pre>{{ allParams }}</pre>
+  </div>
+</div>
+</body>
+</html>
