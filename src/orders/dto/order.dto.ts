@@ -1,8 +1,11 @@
 import {
   IsDefined,
-  IsEmail, IsIn,
-  IsInt, IsMobilePhone,
+  IsEmail,
+  IsIn,
+  IsInt,
+  IsMobilePhone,
   IsNotEmpty,
+  IsNumber,
   IsPhoneNumber,
   IsString,
   ValidateNested,
@@ -11,10 +14,10 @@ import { ProductInterface } from '../interfaces/product.interface';
 import { DeliveryInterface } from '../interfaces/delivery.interface';
 import { CustomerInterface } from '../interfaces/customer.interface';
 import { Type } from 'class-transformer';
-import { SENDER_CITIES, TARIFFS } from '../../constants/delivery';
+import {SENDER_CITY_IDS, TARIFF_IDS } from '../../constants/delivery';
 
 
-class Customer implements CustomerInterface{
+class Customer implements CustomerInterface {
   @IsNotEmpty()
   @IsString()
   name: string;
@@ -30,7 +33,7 @@ class Customer implements CustomerInterface{
   email: string;
 }
 
-class Delivery implements DeliveryInterface{
+class Delivery implements DeliveryInterface {
   @IsNotEmpty()
   address: string;
 
@@ -40,26 +43,26 @@ class Delivery implements DeliveryInterface{
   @IsNotEmpty()
   cityFull: string;
 
-  @IsNotEmpty()
-  cityId: string;
+  @IsNumber()
+  cityId: number;
 
   @IsNotEmpty()
   zip: string;
 
-  @IsInt()
+  @IsNumber()
   price: number;
 
-  @IsString()
-  @IsIn(Object.keys(TARIFFS))
-  tariffId: string;
+  @IsNumber()
+  @IsIn(TARIFF_IDS)
+  tariffId: number;
 
-  @IsString()
-  @IsIn(Object.keys(SENDER_CITIES))
-  senderCityId: string;
+  @IsNumber()
+  @IsIn(SENDER_CITY_IDS)
+  senderCityId: number;
 }
 
 
-class Product implements ProductInterface{
+class Product implements ProductInterface {
   @IsInt()
   id: number;
   @IsNotEmpty()
@@ -68,24 +71,23 @@ class Product implements ProductInterface{
   price: number;
   @IsInt()
   count: number;
-  @IsInt()
+  @IsNumber()
   total: number;
 }
 
 
-
 export class OrderDTO {
-  @ValidateNested({ each: true})
+  @ValidateNested({ each: true })
   @IsDefined()
   @Type(() => Customer)
   customer: Customer;
 
-  @ValidateNested({ each: true})
+  @ValidateNested({ each: true })
   @IsDefined()
   @Type(() => Delivery)
   delivery: Delivery;
 
-  @ValidateNested({ each: true})
+  @ValidateNested({ each: true })
   @IsDefined()
   @Type(() => Product)
   product: Product;

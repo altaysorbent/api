@@ -1,4 +1,4 @@
-export interface PayboxRequestDTO {
+export class PayboxRequestDTO {
   pg_order_id: string;
   pg_payment_id: string;
   pg_amount: string;
