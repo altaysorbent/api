@@ -150,7 +150,7 @@ export class OrdersService {
 
   async processResult(result: PayboxResultDTO, endpointUrl) {
     const orderId = result.pg_order_id;
-    const order = await this.orderModel.findOne({id: orderId}).exec();
+    const order = await this.orderModel.findOne({ id: orderId }).exec();
     let responseText = '';
     let responseStatus;
     if (!order) {
@@ -159,10 +159,17 @@ export class OrdersService {
       responseText = 'Неверная сумма';
     } else {
       let newOrderStatus;
+      let title;
       if (result.pg_result === PAYBOX_SUCCESS_RESULT_CODE) {
         newOrderStatus = ORDER_STATUSES.PAID;
+        title = `Оплата по заказу №${orderId}`;
+        responseStatus = PAYBOX_RESPONSE_STATUSES.SUCCESS;
+      } else {
+        newOrderStatus = ORDER_STATUSES.CANCELED;
+        title = `Заказ №${orderId} отменен`;
+      }
 
-        const title = `Оплата по заказу №${orderId}`;
+      if (newOrderStatus !== order.status) {
         const context = {
           title,
           orderId,
@@ -173,13 +180,11 @@ export class OrdersService {
           payboxCardNumber: result.pg_card_pan,
           allParams: JSON.stringify(result),
         };
+
         this.salesNotify(context, title, EmailTemplates.ORDER_PAID);
 
-        responseStatus = PAYBOX_RESPONSE_STATUSES.SUCCESS;
-      } else {
-        newOrderStatus = ORDER_STATUSES.CANCELED;
+        await this.orderModel.updateOne({ id: orderId }, { status: newOrderStatus });
       }
-      await this.orderModel.updateOne({ id: orderId }, { status: newOrderStatus });
     }
 
     if (responseStatus !== PAYBOX_RESPONSE_STATUSES.SUCCESS) {
