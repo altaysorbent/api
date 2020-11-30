@@ -100,7 +100,7 @@ export class OrdersService {
 
   async createOrder(orderDto: OrderDTO) {
 
-    const totalPrice = orderDto.product.total + orderDto.delivery.price;
+    const totalPrice = (orderDto.product.count * orderDto.product.price) + orderDto.delivery.price;
     const newOrder = {
       ...orderDto,
       status: ORDER_STATUSES.NEW,
