@@ -4,7 +4,7 @@ const ORDER_STATUSES = {
   CANCELED: 'canceled',
 };
 
-const DEFAULT_CURRENCY = 'KZT';
+const DEFAULT_CURRENCY = 'RUR';
 
 const ORDER_RESULT_ENDPOINT_URL = '/orders/result';
 
