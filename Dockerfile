@@ -1,7 +1,7 @@
 FROM node:lts-alpine3.12
 WORKDIR /app
 COPY . .
-RUN rm .env
+RUN rm -f .env
 RUN yarn install
 RUN yarn build
 
