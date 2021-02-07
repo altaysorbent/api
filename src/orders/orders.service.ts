@@ -15,7 +15,7 @@ import {
 import { formatISO } from 'date-fns';
 import { MailerService } from '@nestjs-modules/mailer';
 import { PayboxResultResponseInterface } from './interfaces/paybox/resultResponse.interface';
-import { SENDER_CITIES, TARIFFS } from '../constants/delivery';
+import { DELIVERY_COMPANIES, SENDER_CITIES, TARIFFS } from '../constants/delivery';
 import { PayboxResultDTO } from './dto/payboxResultDTO';
 
 const EmailTemplates = {
@@ -70,7 +70,7 @@ export class OrdersService {
       productTotal: orderData.product.total,
       price: orderData.product.price,
       creationDate: orderData.createdAt,
-      delivery: { ...orderData.delivery },
+      delivery: { ...orderData.delivery, isCDEKCompany: orderData.delivery.company === DELIVERY_COMPANIES.CDEK },
       tariff,
       senderCity,
       allParams: JSON.stringify({ ...orderData, ...paymentData }),
