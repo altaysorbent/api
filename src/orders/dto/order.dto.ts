@@ -9,12 +9,13 @@ import {
   IsPhoneNumber,
   IsString,
   ValidateNested,
+  ValidateIf,
 } from 'class-validator';
 import { ProductInterface } from '../interfaces/product.interface';
 import { DeliveryInterface } from '../interfaces/delivery.interface';
 import { CustomerInterface } from '../interfaces/customer.interface';
 import { Type } from 'class-transformer';
-import {SENDER_CITY_IDS, TARIFF_IDS } from '../../constants/delivery';
+import { DELIVERY_COMPANIES, SENDER_CITY_IDS, TARIFF_IDS } from '../../constants/delivery';
 
 
 class Customer implements CustomerInterface {
@@ -40,9 +41,11 @@ class Delivery implements DeliveryInterface {
   @IsNotEmpty()
   city: string;
 
+  @ValidateIf(o => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
   @IsNotEmpty()
   cityFull: string;
 
+  @ValidateIf(o => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
   @IsNumber()
   cityId: number;
 
@@ -52,13 +55,19 @@ class Delivery implements DeliveryInterface {
   @IsNumber()
   price: number;
 
+  @ValidateIf(o => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
   @IsNumber()
   @IsIn(TARIFF_IDS)
   tariffId: number;
 
+  @ValidateIf(o => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
   @IsNumber()
   @IsIn(SENDER_CITY_IDS)
   senderCityId: number;
+
+  @IsNotEmpty()
+  @IsIn(Object.values(DELIVERY_COMPANIES))
+  company: string;
 }
 
 

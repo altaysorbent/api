@@ -7,6 +7,11 @@ const EXTRA_PACKAGE = {
 const TARIFF_IDS = [137, 136];
 const SENDER_CITY_IDS = [11903, 137];
 
+const DELIVERY_COMPANIES = {
+  CDEK: 'CDEK',
+  KAZPOST: 'KAZPOST',
+};
+
 const TARIFFS = {
   [TARIFF_IDS[0]]: 'Доставка до квартиры',
   [TARIFF_IDS[1]]: 'Заберу со склада',
@@ -24,4 +29,5 @@ export {
   SENDER_CITIES,
   TARIFF_IDS,
   SENDER_CITY_IDS,
+  DELIVERY_COMPANIES
 };
