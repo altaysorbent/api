@@ -1,4 +1,4 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpService, Injectable } from '@nestjs/common';
 import { OrderDTO } from './dto/order.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order, OrderDocument } from './schemas/order';
@@ -9,6 +9,7 @@ import {
   DEFAULT_CURRENCY,
   ORDER_RESULT_ENDPOINT_URL,
   ORDER_STATUSES,
+  PAYBOX_REDIRECT_URL_KEY,
   PAYBOX_RESPONSE_STATUSES,
   PAYBOX_SUCCESS_RESULT_CODE,
 } from '../constants/order';
@@ -17,6 +18,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { PayboxResultResponseInterface } from './interfaces/paybox/resultResponse.interface';
 import { DELIVERY_COMPANIES, SENDER_CITIES, TARIFFS } from '../constants/delivery';
 import { PayboxResultDTO } from './dto/payboxResultDTO';
+import { xml2js } from 'xml-js';
 
 const EmailTemplates = {
   NEW_ORDER: 'newOrder',
@@ -129,21 +131,24 @@ export class OrdersService {
       pg_request_method: 'POST',
     };
 
-    const paymentSignature = this.payboxSignData('payment.php', paymentData);
-
-
+    const paymentSignature = this.payboxSignData(process.env.PAYBOX_PAYMENT_SCRIPT, paymentData);
+    
     const payboxMeta = { ...paymentData, 'pg_sig': paymentSignature };
 
     await this.orderModel.updateOne({ id: orderId }, { meta: payboxMeta });
 
-    return this.httpService.post(process.env.PAYBOX_PAYMENT_URL, payboxMeta).pipe(
+    return this.httpService.post(`${process.env.PAYBOX_PAYMENT_URL}/${process.env.PAYBOX_PAYMENT_SCRIPT}`, payboxMeta).pipe(
       map(response => {
+        const result = xml2js(response.data);
+        const pgRedirectUrlElement = result.elements[0].elements.find(element => element.name === PAYBOX_REDIRECT_URL_KEY);
+
+        if(!pgRedirectUrlElement?.elements?.length){
+          throw new BadRequestException(response.data);
+        }
 
         this.salesNotify(this.prepareSalesEmail(paymentData, createdOrder));
 
-        const { request } = response;
-
-        return { redirectUrl: request.res.responseUrl, id: createdOrder.id };
+        return { redirectUrl: pgRedirectUrlElement.elements.pop().text, id: createdOrder.id };
       }),
     );
   }
