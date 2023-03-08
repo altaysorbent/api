@@ -1,4 +1,4 @@
-export interface PayboxMetaInterface {
+export interface IPayboxMeta {
   pg_merchant_id: string;
   pg_order_id: string;
   pg_amount: number;

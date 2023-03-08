@@ -9,14 +9,13 @@ import { DeliveryModule } from './delivery/delivery.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
     ProductsModule,
     MongooseModule.forRoot(
       `mongodb+srv://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}?retryWrites=true&w=majority`,
-      {useFindAndModify: false}
+      { useFindAndModify: false },
     ),
     OrdersModule,
     DeliveryModule,
@@ -48,5 +47,4 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {
-}
+export class AppModule {}
