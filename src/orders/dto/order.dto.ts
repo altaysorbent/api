@@ -11,14 +11,17 @@ import {
   ValidateNested,
   ValidateIf,
 } from 'class-validator';
-import { ProductInterface } from '../interfaces/product.interface';
-import { DeliveryInterface } from '../interfaces/delivery.interface';
-import { CustomerInterface } from '../interfaces/customer.interface';
+import { IProduct } from '../interfaces/product.interface';
+import { IDelivery } from '../interfaces/delivery.interface';
+import { ICustomer } from '../interfaces/customer.interface';
 import { Type } from 'class-transformer';
-import { DELIVERY_COMPANIES, SENDER_CITY_IDS, TARIFF_IDS } from '../../constants/delivery';
+import {
+  DELIVERY_COMPANIES,
+  SENDER_CITY_IDS,
+  TARIFF_IDS,
+} from '../../constants/delivery';
 
-
-class Customer implements CustomerInterface {
+class Customer implements ICustomer {
   @IsNotEmpty()
   @IsString()
   name: string;
@@ -34,18 +37,18 @@ class Customer implements CustomerInterface {
   email: string;
 }
 
-class Delivery implements DeliveryInterface {
+class Delivery implements IDelivery {
   @IsNotEmpty()
   address: string;
 
   @IsNotEmpty()
   city: string;
 
-  @ValidateIf(o => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
+  @ValidateIf((o) => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
   @IsNotEmpty()
   cityFull: string;
 
-  @ValidateIf(o => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
+  @ValidateIf((o) => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
   @IsNumber()
   cityId: number;
 
@@ -55,12 +58,12 @@ class Delivery implements DeliveryInterface {
   @IsNumber()
   price: number;
 
-  @ValidateIf(o => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
+  @ValidateIf((o) => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
   @IsNumber()
   @IsIn(TARIFF_IDS)
   tariffId: number;
 
-  @ValidateIf(o => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
+  @ValidateIf((o) => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
   @IsNumber()
   @IsIn(SENDER_CITY_IDS)
   senderCityId: number;
@@ -70,8 +73,7 @@ class Delivery implements DeliveryInterface {
   company: string;
 }
 
-
-class Product implements ProductInterface {
+class Product implements IProduct {
   @IsInt()
   id: number;
   @IsNotEmpty()
@@ -83,7 +85,6 @@ class Product implements ProductInterface {
   @IsNumber()
   total: number;
 }
-
 
 export class OrderDTO {
   @ValidateNested({ each: true })

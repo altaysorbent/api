@@ -1,10 +1,9 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { DeliveryInterface } from '../interfaces/delivery.interface';
-import { ProductInterface } from '../interfaces/product.interface';
-import { CustomerInterface } from '../interfaces/customer.interface';
-import { PayboxMetaInterface } from '../interfaces/paybox/meta.interface';
+import { IDelivery } from '../interfaces/delivery.interface';
+import { IProduct } from '../interfaces/product.interface';
+import { ICustomer } from '../interfaces/customer.interface';
+import { IPayboxMeta } from '../interfaces/paybox/meta.interface';
 import { Document } from 'mongoose';
-
 
 @Schema()
 export class Order {
@@ -18,16 +17,16 @@ export class Order {
   name: string;
 
   @Prop()
-  delivery: DeliveryInterface;
+  delivery: IDelivery;
 
   @Prop()
-  product: ProductInterface;
+  product: IProduct;
 
   @Prop()
-  customer: CustomerInterface;
+  customer: ICustomer;
 
   @Prop()
-  meta: PayboxMetaInterface;
+  meta: IPayboxMeta;
 
   @Prop()
   status: string;
@@ -39,6 +38,5 @@ export class Order {
   totalPrice: number;
 }
 
-
-export type OrderDocument = Order & Document;
-export const OrderSchema = SchemaFactory.createForClass(Order)
+export type TOrderDocument = Order & Document;
+export const OrderSchema = SchemaFactory.createForClass(Order);

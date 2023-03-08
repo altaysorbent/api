@@ -1,4 +1,4 @@
-export interface DeliveryInterface {
+export interface IDelivery {
   address: string;
   city: string;
   cityFull: string;

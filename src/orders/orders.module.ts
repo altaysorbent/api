@@ -13,17 +13,19 @@ import { Connection } from 'mongoose';
         name: Order.name,
         useFactory: async (connection: Connection) => {
           const schema = OrderSchema;
-          schema.plugin(AutoIncrementFactory(connection), {id: 'orders', inc_field: 'id', start_seq: 100});
+          schema.plugin(AutoIncrementFactory(connection), {
+            id: 'orders',
+            inc_field: 'id',
+            start_seq: 100,
+          });
           return schema;
         },
         inject: [getConnectionToken('')],
       },
-
     ]),
     HttpModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
 })
-export class OrdersModule {
-}
+export class OrdersModule {}
