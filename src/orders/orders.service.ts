@@ -1,7 +1,7 @@
 import { BadRequestException, HttpService, Injectable } from '@nestjs/common';
 import { OrderDTO } from './dto/order.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Order, OrderDocument } from './schemas/order';
+import { Order, TOrderDocument } from './schemas/order';
 import { Model } from 'mongoose';
 import { createHash, randomBytes } from 'crypto';
 import { map } from 'rxjs/operators';
@@ -15,9 +15,13 @@ import {
 } from '../constants/order';
 import { formatISO } from 'date-fns';
 import { MailerService } from '@nestjs-modules/mailer';
-import { PayboxResultResponseInterface } from './interfaces/paybox/resultResponse.interface';
-import { DELIVERY_COMPANIES, SENDER_CITIES, TARIFFS } from '../constants/delivery';
-import { PayboxResultDTO } from './dto/payboxResultDTO';
+import { IPayboxResponse } from './interfaces/paybox/response.interface';
+import {
+  DELIVERY_COMPANIES,
+  SENDER_CITIES,
+  TARIFFS,
+} from '../constants/delivery';
+import { PayboxResultDTO } from './dto/paybox-result.dto';
 import { xml2js } from 'xml-js';
 
 const EmailTemplates = {
@@ -25,27 +29,22 @@ const EmailTemplates = {
   ORDER_PAID: 'orderPaid',
 };
 
-
 @Injectable()
 export class OrdersService {
-
   constructor(
-    @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    @InjectModel(Order.name) private orderModel: Model<TOrderDocument>,
     private httpService: HttpService,
     private readonly mailerService: MailerService,
-  ) {
-  }
+  ) {}
 
-
-  payboxSignData(script, data): string {
+  payboxSignData(url, data): string {
     const secretKey = process.env.PAYBOX_SECRET;
 
-    const items = [script];
-
+    const items = [url];
 
     Object.keys(data)
       .sort()
-      .map(function(key) {
+      .map(function (key) {
         items.push(data[key]);
         return data[key];
       });
@@ -72,46 +71,44 @@ export class OrdersService {
       productTotal: orderData.product.total,
       price: orderData.product.price,
       creationDate: orderData.createdAt,
-      delivery: { ...orderData.delivery, isCDEKCompany: orderData.delivery.company === DELIVERY_COMPANIES.CDEK },
+      delivery: {
+        ...orderData.delivery,
+        isCDEKCompany: orderData.delivery.company === DELIVERY_COMPANIES.CDEK,
+      },
       tariff,
       senderCity,
       allParams: JSON.stringify({ ...orderData, ...paymentData }),
     };
   }
 
-  async salesNotify(context, subject = null, template = EmailTemplates.NEW_ORDER) {
-
-
-    return this
-      .mailerService
+  async salesNotify(
+    context,
+    subject = null,
+    template = EmailTemplates.NEW_ORDER,
+  ) {
+    return this.mailerService
       .sendMail({
-        to: process.env.MAIL_TO, // list of receivers
-        // from: 'noreply@nestjs.com', // sender address
-        subject: subject || `Новый заказ №${context.orderId}`, // Subject line
+        to: process.env.MAIL_TO,
+        subject: subject || `Новый заказ №${context.orderId}`,
         template,
         context,
       })
-      .catch(err => {
+      .catch((err) => {
         console.log('Error during email sending', err);
       });
   }
 
   generateSalt() {
     return randomBytes(20).toString('hex');
-  };
+  }
 
-  async createOrder(orderDto: OrderDTO) {
+  calculateTotalPrice(orderDTO: OrderDTO) {
+    return (
+      orderDTO.product.count * orderDTO.product.price + orderDTO.delivery.price
+    );
+  }
 
-    const totalPrice = (orderDto.product.count * orderDto.product.price) + orderDto.delivery.price;
-    const newOrder = {
-      ...orderDto,
-      status: ORDER_STATUSES.NEW,
-      createdAt: formatISO(new Date()),
-      totalPrice,
-    };
-    const createdOrder = new this.orderModel(newOrder);
-    const { id: orderId } = await createdOrder.save();
-
+  preparePaymentData(orderDTO: OrderDTO, orderId, totalPrice) {
     const description = `Оплата заказа №${orderId} на сайте Altaysorbent.org на сумму ${totalPrice}`;
 
     const paymentData = {
@@ -121,36 +118,67 @@ export class OrdersService {
       pg_currency: DEFAULT_CURRENCY,
       pg_lifetime: 86400,
       pg_description: description,
-      pg_success_url: process.env.WEBSITE_URL + '/order-confirmation?m=' + orderId,
+      pg_success_url:
+        process.env.WEBSITE_URL + '/order-confirmation?m=' + orderId,
       pg_result_url: process.env.API_URL + ORDER_RESULT_ENDPOINT_URL,
       pg_testing_mode: process.env.TESTING_MODE,
       pg_salt: this.generateSalt(),
 
-      pg_user_phone: orderDto.customer.phone,
-      pg_user_contact_email: orderDto.customer.email,
+      pg_user_phone: orderDTO.customer.phone,
+      pg_user_contact_email: orderDTO.customer.email,
       pg_request_method: 'POST',
     };
 
-    const paymentSignature = this.payboxSignData(process.env.PAYBOX_PAYMENT_SCRIPT, paymentData);
-    
-    const payboxMeta = { ...paymentData, 'pg_sig': paymentSignature };
+    return paymentData;
+  }
+
+  async createOrder(orderDTO: OrderDTO) {
+    const totalPrice = this.calculateTotalPrice(orderDTO);
+
+    const newOrder = {
+      ...orderDTO,
+      status: ORDER_STATUSES.NEW,
+      createdAt: formatISO(new Date()),
+      totalPrice,
+    };
+    const createdOrder = new this.orderModel(newOrder);
+    const { id: orderId } = await createdOrder.save();
+
+    const paymentData = this.preparePaymentData(orderDTO, orderId, totalPrice);
+
+    const paymentSignature = this.payboxSignData(
+      process.env.PAYBOX_PAYMENT_SCRIPT,
+      paymentData,
+    );
+
+    const payboxMeta = { ...paymentData, pg_sig: paymentSignature };
 
     await this.orderModel.updateOne({ id: orderId }, { meta: payboxMeta });
 
-    return this.httpService.post(`${process.env.PAYBOX_PAYMENT_URL}/${process.env.PAYBOX_PAYMENT_SCRIPT}`, payboxMeta).pipe(
-      map(response => {
-        const result = xml2js(response.data);
-        const pgRedirectUrlElement = result.elements[0].elements.find(element => element.name === PAYBOX_REDIRECT_URL_KEY);
+    return this.httpService
+      .post(
+        `${process.env.PAYBOX_PAYMENT_URL}/${process.env.PAYBOX_PAYMENT_SCRIPT}`,
+        payboxMeta,
+      )
+      .pipe(
+        map((response) => {
+          const result = xml2js(response.data);
+          const pgRedirectUrlElement = result.elements[0].elements.find(
+            (element) => element.name === PAYBOX_REDIRECT_URL_KEY,
+          );
 
-        if(!pgRedirectUrlElement?.elements?.length){
-          throw new BadRequestException(response.data);
-        }
+          if (!pgRedirectUrlElement?.elements?.length) {
+            throw new BadRequestException(response.data);
+          }
 
-        this.salesNotify(this.prepareSalesEmail(paymentData, createdOrder));
+          this.salesNotify(this.prepareSalesEmail(paymentData, createdOrder));
 
-        return { redirectUrl: pgRedirectUrlElement.elements.pop().text, id: createdOrder.id };
-      }),
-    );
+          return {
+            redirectUrl: pgRedirectUrlElement.elements.pop().text,
+            id: createdOrder.id,
+          };
+        }),
+      );
   }
 
   async processResult(result: PayboxResultDTO, endpointUrl) {
@@ -188,7 +216,10 @@ export class OrdersService {
 
         this.salesNotify(context, title, EmailTemplates.ORDER_PAID);
 
-        await this.orderModel.updateOne({ id: orderId }, { status: newOrderStatus });
+        await this.orderModel.updateOne(
+          { id: orderId },
+          { status: newOrderStatus },
+        );
       }
     }
 
@@ -200,14 +231,13 @@ export class OrdersService {
       }
     }
 
-    const response: PayboxResultResponseInterface = {
+    const response: IPayboxResponse = {
       pg_salt: result.pg_salt,
       pg_status: responseStatus,
       pg_description: responseText,
     };
 
     response.pg_sig = this.payboxSignData(endpointUrl, response);
-
 
     return response;
   }

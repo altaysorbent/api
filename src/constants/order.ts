@@ -16,4 +16,4 @@ export const PAYBOX_RESPONSE_STATUSES = {
   SUCCESS: 'ok',
   ERROR: 'error',
   REJECTED: 'rejected',
-}
+};

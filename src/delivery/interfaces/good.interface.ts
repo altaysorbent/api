@@ -1,6 +1,6 @@
-export interface Good {
-  weight: string;
-  length: string;
-  width: string;
-  height: string;
+export interface IGood {
+  weight: number;
+  length: number;
+  width: number;
+  height: number;
 }
