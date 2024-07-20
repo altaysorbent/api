@@ -3,7 +3,7 @@ WORKDIR /app
 COPY . .
 RUN rm -f .env
 RUN npm ci
-RUN npm build
+RUN npm run build
 
 EXPOSE 3000
 
