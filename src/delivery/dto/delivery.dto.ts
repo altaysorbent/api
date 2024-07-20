@@ -1,33 +1,38 @@
 import {
   IsIn,
   IsNotEmpty,
-  IsNumberString,
+  IsNumber,
   IsOptional,
   IsString,
+  ValidateIf,
 } from 'class-validator';
 import {
   DELIVERY_COMPANIES,
-  SENDER_CITIES,
-  TARIFFS,
+  SENDER_CITY_IDS,
+  TARIFF_IDS,
 } from '../../constants/delivery';
 
 export class DeliveryDTO {
-  @IsOptional()
-  @IsIn(Object.keys(SENDER_CITIES))
-  @IsString()
-  senderCityId?: string;
+  @ValidateIf((o) => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
+  @IsIn(SENDER_CITY_IDS)
+  @IsNumber()
+  senderCityId: string;
 
+  @IsString()
   @IsOptional()
-  @IsNumberString()
+  address: string;
+
+  @IsNumber()
   receiverCityId?: number;
 
-  @IsOptional()
-  @IsIn(Object.keys(TARIFFS))
-  @IsNumberString()
+  @ValidateIf((o) => o.deliveryCompany === DELIVERY_COMPANIES.CDEK)
+  @IsIn(TARIFF_IDS)
+  @IsNumber()
   tariffId?: number;
 
   @IsNotEmpty()
-  quantity: string;
+  @IsNumber()
+  quantity: number;
 
   @IsString()
   @IsIn(Object.keys(DELIVERY_COMPANIES))
@@ -37,7 +42,6 @@ export class DeliveryDTO {
   @IsString()
   city?: string;
 
-  @IsOptional()
   @IsString()
-  zip?: string;
+  zip: string;
 }

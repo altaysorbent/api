@@ -4,6 +4,11 @@ export const EXTRA_PACKAGE = {
   PRICE: 50,
 };
 
+export const PACKAGE_WEIGHT = 500; // gram
+export const PACKAGE_LENGTH = 21; // centimeter
+export const PACKAGE_WIDTH = 30; // centimeter
+export const PACKAGE_HEIGHT = 5; // centimeter
+
 export const TARIFF_IDS = [137, 136];
 export const SENDER_CITY_IDS = [11903, 137];
 
@@ -25,4 +30,9 @@ export const TARIFFS = {
 export const SENDER_CITIES = {
   [SENDER_CITY_IDS[0]]: 'Усть-Каменогорск',
   [SENDER_CITY_IDS[1]]: 'Санкт-Петербург',
+};
+
+export const DELIVERY_COUNTRIES = {
+  RU: 'RU',
+  KZ: 'KZ',
 };

@@ -1,10 +1,11 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
 import { Order, OrderSchema } from './schemas/order';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 import * as AutoIncrementFactory from 'mongoose-sequence';
 import { Connection } from 'mongoose';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [

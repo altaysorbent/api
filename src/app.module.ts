@@ -8,6 +8,7 @@ import { OrdersModule } from './orders/orders.module';
 import { DeliveryModule } from './delivery/delivery.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { CdekapiModule } from './api/cdek/cdekapi.module';
 
 @Module({
   imports: [
@@ -15,7 +16,6 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
     ProductsModule,
     MongooseModule.forRoot(
       `mongodb+srv://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}?retryWrites=true&w=majority`,
-      { useFindAndModify: false },
     ),
     OrdersModule,
     DeliveryModule,
@@ -43,6 +43,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         },
       }),
     }),
+    CdekapiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

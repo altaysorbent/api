@@ -1,4 +1,5 @@
-import { BadRequestException, HttpService, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { OrderDTO } from './dto/order.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Order, TOrderDocument } from './schemas/order';
