@@ -1,26 +1,37 @@
 import { DeliveryDTO } from './dto/delivery.dto';
-import { CdekProvider } from './providers/cdek';
-import { HttpService, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DELIVERY_COMPANIES } from '../constants/delivery';
-import { KazPostProvider } from './providers/kaz-post';
-import { IDeliveryProvider } from './interfaces/delivery-provider.interface';
+import { CitiesByCountryCodeDto } from './dto/cities-by-country-code.dto';
+import { CDEKService } from '../cdek/cdek.service';
+import { KazPostService } from '../kaz-post/kaz-post.service';
+import { PostCodesByCityCodeDto } from './dto/post-codes-by-city-code.dto';
 
 @Injectable()
 export class DeliveryService {
-  constructor(private httpService: HttpService) {}
-  private deliveryProvider: IDeliveryProvider;
+  constructor(
+    private cdekService: CDEKService,
+    private kazPostService: KazPostService,
+  ) {}
 
   async getPrice(deliveryDto: DeliveryDTO) {
-    switch (deliveryDto.deliveryCompany) {
-      case DELIVERY_COMPANIES.KAZPOST:
-        this.deliveryProvider = new KazPostProvider();
-        break;
-      case DELIVERY_COMPANIES.CDEK:
-      default:
-        this.deliveryProvider = new CdekProvider(this.httpService);
-        break;
+    if (deliveryDto.deliveryCompany === DELIVERY_COMPANIES.KAZPOST) {
+      return this.kazPostService.getPrice(deliveryDto);
+    } else {
+      return this.cdekService.calculate({
+        code: deliveryDto.receiverCityId,
+        postal_code: deliveryDto.zip,
+        address: deliveryDto.address,
+        quantity: deliveryDto.quantity,
+        tariff_code: deliveryDto.tariffId,
+      });
     }
+  }
 
-    return this.deliveryProvider.getPrice(deliveryDto);
+  async getCitiesByCountryCode(dto: CitiesByCountryCodeDto) {
+    return this.cdekService.getCityListByCountryCode(dto.country);
+  }
+
+  async getPostCodesByCityCode(dto: PostCodesByCityCodeDto) {
+    return this.cdekService.getPostCodesByCityCode(dto.code);
   }
 }

@@ -3,7 +3,7 @@ import { IDelivery } from '../interfaces/delivery.interface';
 import { IProduct } from '../interfaces/product.interface';
 import { ICustomer } from '../interfaces/customer.interface';
 import { IPayboxMeta } from '../interfaces/paybox/meta.interface';
-import { Document } from 'mongoose';
+import * as mongoose from 'mongoose';
 
 @Schema()
 export class Order {
@@ -16,16 +16,16 @@ export class Order {
   @Prop()
   name: string;
 
-  @Prop()
+  @Prop({ type: mongoose.Schema.Types.Mixed })
   delivery: IDelivery;
 
-  @Prop()
+  @Prop({ type: mongoose.Schema.Types.Mixed })
   product: IProduct;
 
-  @Prop()
+  @Prop({ type: mongoose.Schema.Types.Mixed })
   customer: ICustomer;
 
-  @Prop()
+  @Prop({ type: mongoose.Schema.Types.Mixed })
   meta: IPayboxMeta;
 
   @Prop()
@@ -38,5 +38,5 @@ export class Order {
   totalPrice: number;
 }
 
-export type TOrderDocument = Order & Document;
+export type TOrderDocument = Order & mongoose.Document;
 export const OrderSchema = SchemaFactory.createForClass(Order);
