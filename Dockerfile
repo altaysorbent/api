@@ -1,11 +1,11 @@
-FROM node:lts-alpine3.12
+FROM node:lts-alpine3.19
 WORKDIR /app
 COPY . .
 RUN rm -f .env
-RUN yarn install
-RUN yarn build
+RUN npm ci
+RUN npm build
 
 EXPOSE 3000
 
-CMD [ "yarn", "start:prod" ]
+CMD [ "npm", "run", "start:prod" ]
 
